@@ -23,6 +23,7 @@
 - 控件**不导出**：导出时用填好的值替换 `{{c:<uuid>}}` 标记，输出纯净 docx。
 - 后端契约（MSW）：`GET/POST /api/templates`、`GET/PUT/DELETE /api/templates/:id`、`POST /api/templates/:id/generate → { scenarioMap }`。
 - Monorepo 用 pnpm workspaces + turborepo；包名 `@bond-doc/core`、`@bond-doc/demo`。
+- **版本隔离（防腐层，强制）**：`@docx-editor.dev/react` / `@docx-editor.dev/core` 必须**精确锁版**（无 `^`/`~`，当前 `2.2.1`）；所有 `@docx-editor.dev/*` 的直接 `import` 只允许出现在 `packages/core/src/engine/DocxDocumentAdapter.ts` 与 `packages/core/src/react/BondEditor.tsx` 两个文件，其余代码一律经 `IDocumentAdapter` 接口、不得 import docx-editor.dev。
 - 使用 git，远程 `origin = https://github.com/coldtherain/docx-editor.git`（默认分支 `main`）。每个任务完成后，实现者必须 `git add -A && git commit`（消息格式 `feat:` / `fix:` / `docs:` / `test:` + 中文简述），但**不得 push**（push 由控制方在阶段性收尾时统一执行）。
 
 ---

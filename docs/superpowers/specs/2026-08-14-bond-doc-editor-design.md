@@ -85,6 +85,18 @@
 > demo 与 core 解耦：demo 只 `import` core 的公开 API，不依赖 core 内部实现。
 > 微前端化时，demo 整体作为独立 React 应用打包，框架隔离交给微前端方案。
 
+### 防腐层（Anti-Corruption Layer）与版本隔离
+
+docx-editor.dev 项目年轻、维护频繁、API 可能随版本变动。为保证升级不破坏 demo，强制以下约束：
+
+1. **单一接触点**：所有对 `@docx-editor.dev/*` 的直接 `import` 只允许出现在两个文件——
+   - `packages/core/src/engine/DocxDocumentAdapter.ts`（引擎对接）
+   - `packages/core/src/react/BondEditor.tsx`（React 组件壳）
+   其余代码（model 层、demo 页面）只依赖我们自有的 `IDocumentAdapter` 接口，不认识 docx-editor.dev 的任何类型。
+2. **精确锁定版本**：`@docx-editor.dev/react` / `@docx-editor.dev/core` 在 `package.json` 用**精确版本号**（无 `^`/`~`），升级是显式决策，配合提交的 `pnpm-lock.yaml` 保证可复现。
+3. **升级流程**：升级 docx-editor.dev 时只可能改到上述两个文件（+ lock 文件 + 版本号）；若接口变动，修复也局限在这两处，其余代码零改动。
+4. **SPIKE 留档**：`packages/core/src/engine/SPIKE.md` 记录当前版本号的 API 结论，升级时对照 diff。
+
 ## 4. 数据模型
 
 ### 标记语法（tokens.ts）
@@ -209,6 +221,7 @@ Mock 存储：内存/`localStorage`（demo 级别）。`generate` handler 根据
 | 风险 | 影响 | 应对 |
 |---|---|---|
 | docx-editor.dev 项目年轻（185 stars） | 长期稳定性/支持不确定 | demo 先行，保持跟进；核心包薄封装，便于换引擎 |
+| **docx-editor.dev 频繁维护、API 可能变动** | 升级导致 demo 不可用 | 见"防腐层与版本隔离"：单一接触点 + 精确锁版 + 升级只改两处 |
 | **程序化插入文本/查找替换/删除块的确切 API 未在文档确认** | 标记插入与导出的引擎对接是关键路径 | 计划首任务做 spike 验证，锁定精确签名后再铺开 |
 | 占位标记是普通文本，模板编辑时可能被误删 | 模板编辑期用户误删标记 | 标记带醒目样式；保存时校验 metadata 与标记一致性 |
 | 可变段落无内置能力 | 需自研变体选择/删除逻辑 | 已设计为标记块方案，纯逻辑在 core 可测 |

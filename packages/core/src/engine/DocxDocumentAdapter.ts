@@ -41,7 +41,11 @@ export class DocxDocumentAdapter implements IDocumentAdapter {
   }
 
   insertTextAtCursor(text: string): void {
-    this.editor.exec({ type: 'insertText', text });
+    if (text.includes('\n')) {
+      this.editor.exec({ type: 'paste', text });
+    } else {
+      this.editor.exec({ type: 'insertText', text });
+    }
   }
 
   replaceToken(token: string, value: string): void {

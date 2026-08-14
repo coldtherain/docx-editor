@@ -1,7 +1,23 @@
 import { Block, Blocks } from './model';
 import { isVpStartBlock, isVpEndBlock, controlTokensIn, controlToken, replaceControlTokens } from './tokens';
 
+function collectScenarios(blocks: Blocks): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+  for (const b of blocks) {
+    const start = isVpStartBlock(b.text);
+    if (!start) continue;
+    let set = map.get(start.uuid);
+    if (!set) {
+      set = new Set<string>();
+      map.set(start.uuid, set);
+    }
+    set.add(start.scenario);
+  }
+  return map;
+}
+
 export function applyScenario(blocks: Blocks, scenarioMap: Record<string, string>): Blocks {
+  const scenariosByUuid = collectScenarios(blocks);
   const out: Blocks = [];
   const seen = new Set<string>();
   let i = 0;
@@ -14,6 +30,8 @@ export function applyScenario(blocks: Blocks, scenarioMap: Record<string, string
     }
     const { uuid, scenario } = start;
     const chosen = scenarioMap[uuid];
+    const valid = scenariosByUuid.get(uuid);
+    const validChosen = chosen !== undefined && (valid?.has(chosen) ?? false);
     let j = i + 1;
     const content: Blocks = [];
     while (j < blocks.length) {
@@ -22,7 +40,7 @@ export function applyScenario(blocks: Blocks, scenarioMap: Record<string, string
       content.push(blocks[j]);
       j++;
     }
-    const keep = chosen !== undefined ? scenario === chosen : !seen.has(uuid);
+    const keep = validChosen ? scenario === chosen : !seen.has(uuid);
     if (keep) out.push(...content);
     seen.add(uuid);
     i = j + 1;
@@ -35,6 +53,7 @@ export function fillControls(blocks: Blocks, valueByUuid: Record<string, string>
 }
 
 export function computeDeletions(blocks: Blocks, scenarioMap: Record<string, string>): number[] {
+  const scenariosByUuid = collectScenarios(blocks);
   const del: number[] = [];
   const seen = new Set<string>();
   let i = 0;
@@ -46,7 +65,9 @@ export function computeDeletions(blocks: Blocks, scenarioMap: Record<string, str
     }
     const { uuid, scenario } = start;
     const chosen = scenarioMap[uuid];
-    const keep = chosen !== undefined ? scenario === chosen : !seen.has(uuid);
+    const valid = scenariosByUuid.get(uuid);
+    const validChosen = chosen !== undefined && (valid?.has(chosen) ?? false);
+    const keep = validChosen ? scenario === chosen : !seen.has(uuid);
     del.push(i);
     let j = i + 1;
     while (j < blocks.length) {

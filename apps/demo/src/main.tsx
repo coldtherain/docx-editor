@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '@docx-editor.dev/core/styles/editor.css';
 import { App } from './App';
 
 async function bootstrap() {

@@ -26,6 +26,12 @@ describe('scenario', () => {
     ]);
   });
 
+  it('非法场景回退到保留首个变体', () => {
+    expect(applyScenario(blocks, { '1': 'C' }).map((b) => b.text)).toEqual([
+      '开头', 'A 内容', '结尾，金额={{c:amt}}',
+    ]);
+  });
+
   it('fillControls 替换控件标记', () => {
     const after = applyScenario(blocks, { '1': 'B' });
     expect(fillControls(after, { amt: '100.00' }).map((b) => b.text)).toEqual([
@@ -40,6 +46,10 @@ describe('scenario', () => {
 
   it('computeDeletions 未给场景时删除非首变体', () => {
     expect(computeDeletions(blocks, {})).toEqual([1, 3, 4, 5, 6]);
+  });
+
+  it('computeDeletions 非法场景与未给场景一致', () => {
+    expect(computeDeletions(blocks, { '1': 'C' })).toEqual([1, 3, 4, 5, 6]);
   });
 
   it('computeReplacements 返回标记->值映射', () => {

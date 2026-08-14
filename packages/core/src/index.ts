@@ -10,5 +10,6 @@ export * from './model/api';
 export * from './engine/adapter';
 export * from './engine/export';
 export { DocxDocumentAdapter } from './engine/DocxDocumentAdapter';
+export { ServerDocumentAdapter } from './engine/ServerDocumentAdapter';
 export { BondEditor } from './react/BondEditor';
 export type { BondEditorRef, BondEditorProps } from './react/BondEditor';

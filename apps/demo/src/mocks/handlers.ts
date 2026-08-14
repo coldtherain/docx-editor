@@ -37,13 +37,12 @@ export const handlers = [
   }),
   http.post(ENDPOINTS.generate(':id'), async ({ request, params }) => {
     const body = (await request.json()) as { params?: Record<string, unknown> };
-    const count = typeof body.params?.bondCount === 'number' ? body.params.bondCount : 2;
     const t = store.get(String(params.id));
     const scenarioMap: Record<string, string> = {};
     if (t) {
       t.metadata.variableParagraphs.forEach((vp, idx) => {
-        const scenarios = vp.scenarios;
-        scenarioMap[vp.id] = count >= 2 && idx === 1 ? 'B' : scenarios[0] ?? 'A';
+        const sc = vp.scenarios;
+        scenarioMap[vp.id] = sc[Math.min(idx, sc.length - 1)] ?? 'A';
       });
     }
     return HttpResponse.json({ scenarioMap });

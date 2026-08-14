@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Space, message, List, Typography } from 'antd';
-import { BondEditor, BondEditorRef, exportDocument, ExportValidationError, Template } from '@bond-doc/core';
+import { BondEditor, BondEditorRef, exportDocumentFromBytes, ExportValidationError, Template } from '@bond-doc/core';
 import { getTemplate, generate } from '../api/client';
 import { useAppStore } from '../store';
 import { ValueInput } from './ValueInput';
@@ -25,10 +25,8 @@ export function ContentGen() {
 
   const exportDoc = async () => {
     if (!template) return;
-    const adapter = editorRef.current?.getAdapter();
-    if (!adapter) { message.error('编辑器尚未就绪'); return; }
     try {
-      const buffer = await exportDocument(adapter, template.metadata, values, scenarioMap);
+      const buffer = await exportDocumentFromBytes(template.docx, template.metadata, values, scenarioMap);
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

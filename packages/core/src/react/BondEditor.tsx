@@ -19,17 +19,36 @@ export interface BondEditorProps {
   style?: CSSProperties;
 }
 
-function InstanceCapture({ instanceRef }: { instanceRef: MutableRefObject<DocxEditorInstance | null> }) {
+function InstanceCapture({
+  instanceRef,
+  adapterRef,
+}: {
+  instanceRef: MutableRefObject<DocxEditorInstance | null>;
+  adapterRef: MutableRefObject<DocxDocumentAdapter | null>;
+}) {
   const editor = useDocxEditor();
   useEffect(() => {
+    if (!editor) return;
     instanceRef.current = editor;
-  }, [editor, instanceRef]);
+    if (!adapterRef.current) {
+      adapterRef.current = new DocxDocumentAdapter(editor);
+    }
+  }, [editor, instanceRef, adapterRef]);
   return null;
 }
 
 export const BondEditor = forwardRef<BondEditorRef, BondEditorProps>(
   function BondEditor({ document, mode = 'edit', onSave, style }, ref) {
     const instanceRef = useRef<DocxEditorInstance | null>(null);
+    const adapterRef = useRef<DocxDocumentAdapter | null>(null);
+
+    useEffect(() => {
+      return () => {
+        adapterRef.current?.dispose();
+        adapterRef.current = null;
+        instanceRef.current = null;
+      };
+    }, []);
 
     useImperativeHandle(
       ref,
@@ -38,8 +57,7 @@ export const BondEditor = forwardRef<BondEditorRef, BondEditorProps>(
         focus: () => {
           instanceRef.current?.focus();
         },
-        getAdapter: () =>
-          instanceRef.current ? new DocxDocumentAdapter(instanceRef.current) : null,
+        getAdapter: () => adapterRef.current,
       }),
       [],
     );
@@ -47,7 +65,7 @@ export const BondEditor = forwardRef<BondEditorRef, BondEditorProps>(
     return (
       <div style={{ height: '100%', minHeight: 0, ...style }}>
         <DocxEditor.Root document={document} mode={mode}>
-          <InstanceCapture instanceRef={instanceRef} />
+          <InstanceCapture instanceRef={instanceRef} adapterRef={adapterRef} />
           <DocxEditor.Toolbar onSave={onSave} />
           <DocxEditor.Viewport>
             <DocxEditor.Content />

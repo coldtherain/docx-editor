@@ -1,4 +1,3 @@
-import { createBrowserAutomationHost, DocxEditorInstance } from '@docx-editor.dev/core/editor';
 import {
   AutomationBatchResponse,
   AutomationHandle,
@@ -6,6 +5,7 @@ import {
   AutomationOperation,
   AutomationSpan,
   AutomationValue,
+  createServerAutomationHost,
 } from '@docx-editor.dev/core/automation';
 import { IDocumentAdapter } from './adapter';
 import { Block } from '../model/model';
@@ -20,13 +20,15 @@ function expectValue(response: AutomationBatchResponse, index: number): Automati
   return result.value;
 }
 
-export class DocxDocumentAdapter implements IDocumentAdapter {
-  private readonly editor: DocxEditorInstance;
+export class ServerDocumentAdapter implements IDocumentAdapter {
   private readonly host: AutomationHost;
 
-  constructor(editor: DocxEditorInstance) {
-    this.editor = editor;
-    this.host = createBrowserAutomationHost(editor);
+  constructor(docx: ArrayBuffer) {
+    const result = createServerAutomationHost(new Uint8Array(docx));
+    if (!result.ok) {
+      throw new Error(`无法打开文档: ${result.reason}${result.detail ? ` (${result.detail})` : ''}`);
+    }
+    this.host = result.host;
   }
 
   getBlocks(): Block[] {
@@ -40,12 +42,8 @@ export class DocxDocumentAdapter implements IDocumentAdapter {
     return response.results.map((_result, index) => ({ text: this.text(expectValue(response, index)) }));
   }
 
-  insertTextAtCursor(text: string): void {
-    if (text.includes('\n')) {
-      this.editor.exec({ type: 'paste', text });
-    } else {
-      this.editor.exec({ type: 'insertText', text });
-    }
+  insertTextAtCursor(_text: string): void {
+    throw new Error('headless 不支持插入');
   }
 
   replaceToken(token: string, value: string): void {
@@ -71,8 +69,13 @@ export class DocxDocumentAdapter implements IDocumentAdapter {
     response.results.forEach((_result, index) => expectValue(response, index));
   }
 
-  save(): Promise<ArrayBuffer | null> {
-    return this.editor.save();
+  async save(): Promise<ArrayBuffer | null> {
+    const result = this.host.save();
+    if (!result.ok) throw new Error(`保存失败: ${result.error.code}`);
+    const bytes = result.bytes;
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    return buffer;
   }
 
   dispose(): void {

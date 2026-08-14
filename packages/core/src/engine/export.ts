@@ -2,6 +2,7 @@ import { IDocumentAdapter } from './adapter';
 import { TemplateMetadata } from '../model/model';
 import { computeDeletions, computeReplacements } from '../model/scenario';
 import { validateValues, ValidationError } from '../model/validation';
+import { ServerDocumentAdapter } from './ServerDocumentAdapter';
 
 export class ExportValidationError extends Error {
   constructor(public readonly errors: ValidationError[]) {
@@ -28,4 +29,18 @@ export async function exportDocument(
   const buffer = await adapter.save();
   if (!buffer) throw new Error('导出失败：无文档');
   return buffer;
+}
+
+export async function exportDocumentFromBytes(
+  docx: ArrayBuffer,
+  metadata: TemplateMetadata,
+  values: Record<string, string>,
+  scenarioMap: Record<string, string>,
+): Promise<ArrayBuffer> {
+  const adapter = new ServerDocumentAdapter(docx);
+  try {
+    return await exportDocument(adapter, metadata, values, scenarioMap);
+  } finally {
+    adapter.dispose?.();
+  }
 }

@@ -23,7 +23,7 @@
 - 控件**不导出**：导出时用填好的值替换 `{{c:<uuid>}}` 标记，输出纯净 docx。
 - 后端契约（MSW）：`GET/POST /api/templates`、`GET/PUT/DELETE /api/templates/:id`、`POST /api/templates/:id/generate → { scenarioMap }`。
 - Monorepo 用 pnpm workspaces + turborepo；包名 `@bond-doc/core`、`@bond-doc/demo`。
-- 不使用 git（用户明确要求，任务中所有 commit 步骤一律跳过）。
+- 使用 git，远程 `origin = https://github.com/coldtherain/docx-editor.git`（默认分支 `main`）。每个任务完成后，实现者必须 `git add -A && git commit`（消息格式 `feat:` / `fix:` / `docs:` / `test:` + 中文简述），但**不得 push**（push 由控制方在阶段性收尾时统一执行）。
 
 ---
 

@@ -18,10 +18,10 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
       '@docx-editor.dev/core':
-        specifier: ^2.2.1
+        specifier: 2.2.1
         version: 2.2.1
       '@docx-editor.dev/react':
-        specifier: ^2.2.1
+        specifier: 2.2.1
         version: 2.2.1(@docx-editor.dev/core@2.2.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       antd:
         specifier: ^5.20.0
@@ -59,6 +59,16 @@ importers:
         version: 2.1.9(@types/node@26.2.0)(msw@2.15.0(@types/node@26.2.0)(typescript@5.9.3))
 
   packages/core:
+    dependencies:
+      '@docx-editor.dev/core':
+        specifier: 2.2.1
+        version: 2.2.1
+      '@docx-editor.dev/react':
+        specifier: 2.2.1
+        version: 2.2.1(@docx-editor.dev/core@2.2.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
     devDependencies:
       typescript:
         specifier: ^5.5.0

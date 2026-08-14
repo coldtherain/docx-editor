@@ -36,6 +36,7 @@ export function fillControls(blocks: Blocks, valueByUuid: Record<string, string>
 
 export function computeDeletions(blocks: Blocks, scenarioMap: Record<string, string>): number[] {
   const del: number[] = [];
+  const seen = new Set<string>();
   let i = 0;
   while (i < blocks.length) {
     const start = isVpStartBlock(blocks[i].text);
@@ -45,7 +46,7 @@ export function computeDeletions(blocks: Blocks, scenarioMap: Record<string, str
     }
     const { uuid, scenario } = start;
     const chosen = scenarioMap[uuid];
-    const keep = chosen === undefined || scenario === chosen;
+    const keep = chosen !== undefined ? scenario === chosen : !seen.has(uuid);
     del.push(i);
     let j = i + 1;
     while (j < blocks.length) {
@@ -57,6 +58,7 @@ export function computeDeletions(blocks: Blocks, scenarioMap: Record<string, str
       if (!keep) del.push(j);
       j++;
     }
+    seen.add(uuid);
     i = j + 1;
   }
   return del;

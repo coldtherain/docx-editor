@@ -38,6 +38,10 @@ describe('scenario', () => {
     expect(del).toEqual([1, 2, 3, 4, 6]);
   });
 
+  it('computeDeletions 未给场景时删除非首变体', () => {
+    expect(computeDeletions(blocks, {})).toEqual([1, 3, 4, 5, 6]);
+  });
+
   it('computeReplacements 返回标记->值映射', () => {
     expect(computeReplacements(blocks, { amt: '99' })).toEqual([{ token: '{{c:amt}}', value: '99' }]);
   });
